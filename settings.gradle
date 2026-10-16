@@ -15,4 +15,4 @@ include 'api'
 include 'services:webservice'
 */
 
-rootProject.name = 'BigDataLab'
+rootProject.name = 'big-data_project'
