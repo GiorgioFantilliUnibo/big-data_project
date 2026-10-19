@@ -56,8 +56,8 @@ object EthereumParser {
           None
         } else {
           val number = cols(BlockNumberIdx).trim.toLong
-          val miner = cols(BlockMinerIdx).trim.toLowerCase
-          val date = timestampToDay(cols(BlockTimestampIdx))
+          val miner = cols(BlockMinerIdx).trim.toLowerCase.intern()
+          val date = timestampToDay(cols(BlockTimestampIdx)).intern()
           Some((number, (date, miner)))
         }
       } catch {
