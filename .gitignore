@@ -2,7 +2,7 @@ _*
 src/main/resources/aws_credentials.txt
 .idea/
 metastore_db/
-output/
+# output/
 datasets/big/
 *.ppk
 aws/credentials
