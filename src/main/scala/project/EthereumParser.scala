@@ -9,13 +9,15 @@ import org.apache.spark.util.LongAccumulator
  */
 object EthereumParser {
 
+  type Tx = (String, Long, Long, Boolean)
+
   private final val BlockNumberIdx: Int = 0
   private final val BlockMinerIdx: Int = 9
   private final val BlockTimestampIdx: Int = 16
   private final val MinBlockCols: Int = 17
 
-  private final val TxHashIdx: Int = 0
   private final val TxBlockNumberIdx: Int = 3
+  private final val TxFromIdx: Int = 5
   private final val TxValueIdx: Int = 7
   private final val TxGasPriceIdx: Int = 9
   private final val TxInputIdx: Int = 10
@@ -73,13 +75,13 @@ object EthereumParser {
    *
    * @param line the raw CSV record representing a transaction
    * @param malformedAcc accumulator tracking the count of malformed records
-   * @return [[Some]] containing `(blockNumber, (valueInGwei, gasPrice, isContractCall))` if parsing succeeds,
+   * @return [[Some]] containing `(blockNumber, (fromAddress, valueInGwei, gasPrice, isContractCall))` if parsing succeeds,
    *         or [[None]] if the line is empty, a header row, or malformed
    */
   def parseTransaction(
       line: String,
       malformedAcc: LongAccumulator
-  ): Option[(Long, (Long, Long, Boolean))] = {
+  ): Option[(Long, Tx)] = {
     if (line.isEmpty || line.startsWith("hash,")) {
       None
     } else {
@@ -90,13 +92,14 @@ object EthereumParser {
           None
         } else {
           val blockNumber = cols(TxBlockNumberIdx).trim.toLong
+          val from = cols(TxFromIdx).trim.toLowerCase.intern()
           val valueWei = BigInt(cols(TxValueIdx).trim)
           val valueGwei = (valueWei / WeiPerGwei).toLong
           val gasPrice = cols(TxGasPriceIdx).trim.toLong
           val input = cols(TxInputIdx).trim
           val isContractCall = input.nonEmpty && input != "0x"
 
-          Some((blockNumber, (valueGwei, gasPrice, isContractCall)))
+          Some((blockNumber, (from, valueGwei, gasPrice, isContractCall)))
         }
       } catch {
         case _: Exception =>
